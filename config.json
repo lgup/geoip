@@ -5,10 +5,10 @@
       "action": "add",
       "args": {
         "country": "./geolite2/GeoLite2-Country-Locations-en.csv",
-        "ipv4": "./geolite2/GeoLite2-Country-Blocks-IPv4.csv",
-        "ipv6": "./geolite2/GeoLite2-Country-Blocks-IPv6.csv"
+        "ipv4": "./geolite2/GeoLite2-Country-Blocks-IPv4.csv"
       }
     },
+
     {
       "type": "cutter",
       "action": "remove",
@@ -17,6 +17,7 @@
         "onlyIPType": "ipv4"
       }
     },
+
     {
       "type": "text",
       "action": "add",
@@ -26,6 +27,7 @@
         "onlyIPType": "ipv4"
       }
     },
+
     {
       "type": "text",
       "action": "add",
@@ -33,15 +35,6 @@
         "name": "cn",
         "uri": "https://raw.githubusercontent.com/gaoyifan/china-operator-ip/ip-lists/china.txt",
         "onlyIPType": "ipv4"
-      }
-    },
-    {
-      "type": "text",
-      "action": "add",
-      "args": {
-        "name": "cn",
-        "uri": "https://raw.githubusercontent.com/gaoyifan/china-operator-ip/ip-lists/china6.txt",
-        "onlyIPType": "ipv6"
       }
     }
   ],
@@ -71,37 +64,7 @@
       "args": {
         "outputDir": "./output",
         "outputName": "Cn-Ru.mmdb",
-        "wantedList": ["cn","ru"]
-      }
-    },
-    {
-      "type": "maxmindMMDB",
-      "action": "output",
-      "args": {
-        "outputDir": "./output",
-        "outputName": "Cn-NoIPV6.mmdb",
-        "wantedList": ["cn"],
-        "disableIPv6": true
-      }
-    },
-    {
-      "type": "maxmindMMDB",
-      "action": "output",
-      "args": {
-        "outputDir": "./output",
-        "outputName": "Ru-NoIPV6.mmdb",
-        "wantedList": ["ru"],
-        "disableIPv6": true
-      }
-    },
-    {
-      "type": "maxmindMMDB",
-      "action": "output",
-      "args": {
-        "outputDir": "./output",
-        "outputName": "Cn-Ru-NoIPV6.mmdb",
-        "wantedList": ["cn","ru"],
-        "disableIPv6": true
+        "wantedList": ["cn", "ru"]
       }
     }
   ]
