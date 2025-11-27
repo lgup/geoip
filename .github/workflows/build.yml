@@ -35,20 +35,28 @@ jobs:
           mv "$EXTRACTED_DIR"/* ./geolite2/
           rm -rf ./geolite2_temp GeoLite2-Country-CSV.zip
 
-      - name: Convert CSV → MMDB
+      - name: Convert CSV → MMDB (All + NoIPv6)
         run: |
+          # 原始配置：生成带 IPv6 的三份
           go run . convert -c config.json
           mv -f ./output/Cn.mmdb ./Cn.mmdb
           mv -f ./output/Ru.mmdb ./Ru.mmdb
           mv -f ./output/Cn-Ru.mmdb ./Cn-Ru.mmdb
 
+          # 修改 config.json 临时去掉 IPv6 输出，生成轻量版三份
+          jq '.output[] |= (if has("onlyIPType") then . else . + {"onlyIPType":"ipv4","outputName":(.outputName | sub(".mmdb";"-NoIPV6.mmdb"))} end)' config.json > config_nov6.json
+          go run . convert -c config_nov6.json
+          mv -f ./output/Cn-NoIPV6.mmdb ./Cn-NoIPV6.mmdb
+          mv -f ./output/Ru-NoIPV6.mmdb ./Ru-NoIPV6.mmdb
+          mv -f ./output/Cn-Ru-NoIPV6.mmdb ./Cn-Ru-NoIPV6.mmdb
+
       - name: Commit and push MMDB files
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f Cn.mmdb Ru.mmdb Cn-Ru.mmdb
-          git diff --cached --quiet || git commit -m "Update GeoIP MMDB"
+          git add -f Cn.mmdb Ru.mmdb Cn-Ru.mmdb Cn-NoIPV6.mmdb Ru-NoIPV6.mmdb Cn-Ru-NoIPV6.mmdb
+          git diff --cached --quiet || git commit -m "Update GeoIP MMDB (All + NoIPv6)"
           git push
 
       - name: List MMDB files
-        run: ls -lh ./Cn.mmdb ./Ru.mmdb ./Cn-Ru.mmdb
+        run: ls -lh ./Cn.mmdb ./Ru.mmdb ./Cn-Ru.mmdb ./Cn-NoIPV6.mmdb ./Ru-NoIPV6.mmdb ./Cn-Ru-NoIPV6.mmdb
