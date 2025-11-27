@@ -3,7 +3,7 @@ name: Build GeoIP MMDB
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * 4"  # 每周四执行一次
+    - cron: "0 0 * * 4"  # 每周四自动运行
 
 jobs:
   build:
@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0  # 确保可以 push
 
       - name: Set up Go
         uses: actions/setup-go@v6
@@ -36,13 +34,13 @@ jobs:
         run: |
           go run . convert -c config.json
 
-      - name: Commit & push MMDB files to master branch
+      - name: Commit & push MMDB files
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ./output/*
-          git commit -m "Update MMDB files"
-          git push origin master
+          git add -f Cn.mmdb Ru.mmdb Cn-Ru.mmdb
+          git commit -m "Update MMDB files" || echo "No changes to commit"
+          git push origin HEAD:master
 
       - name: List output files
         run: ls -l ./output
