@@ -26,7 +26,7 @@ jobs:
         env:
           LICENSE_KEY: ${{ secrets.MAXMIND_GEOLITE2_LICENSE }}
         run: |
-          wget -O ./GeoLite2-Country-CSV.zip "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key=${LICENSE_KEY}&suffix=zip"
+          wget -O ./GeoLite2-Country-CSV.zip "https://raw.githubusercontent.com/Loyalsoldier/geoip/release/GeoLite2-Country-CSV.zip"
           unzip ./GeoLite2-Country-CSV.zip -d ./geolite2_temp
           EXTRACTED_DIR=$(find ./geolite2_temp -maxdepth 1 -type d -name "GeoLite2-Country-CSV_*" | head -n1)
           mv "$EXTRACTED_DIR"/* ./geolite2/
