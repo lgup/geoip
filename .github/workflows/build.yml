@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # 确保可以 push
 
       - name: Set up Go
         uses: actions/setup-go@v6
@@ -23,8 +25,6 @@ jobs:
           mkdir -p ./geolite2 ./output
 
       - name: Download GeoLite2 CSV
-        env:
-          LICENSE_KEY: ${{ secrets.MAXMIND_GEOLITE2_LICENSE }}
         run: |
           wget -O ./GeoLite2-Country-CSV.zip "https://raw.githubusercontent.com/Loyalsoldier/geoip/release/GeoLite2-Country-CSV.zip"
           unzip ./GeoLite2-Country-CSV.zip -d ./geolite2_temp
@@ -36,14 +36,13 @@ jobs:
         run: |
           go run . convert -c config.json
 
-      - name: Upload MMDB files to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file_glob: true
-          file: ./output/*
-          release_name: ${{ github.run_id }}
-          tag: geoip-${{ github.run_id }}
+      - name: Commit & push MMDB files to master branch
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ./output/*
+          git commit -m "Update MMDB files"
+          git push origin master
 
       - name: List output files
         run: ls -l ./output
