@@ -3,7 +3,7 @@ name: Build GeoIP MMDB
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * 4"  # 每周四执行一次
+    - cron: "0 0 * * 4"  # 每周四自动执行
 
 jobs:
   build:
@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
+        with:
+          persist-credentials: true  # 保留凭证以便 git push
 
       - name: Set up Go
         uses: actions/setup-go@v6
@@ -20,11 +22,14 @@ jobs:
 
       - name: Prepare directories
         run: |
-          mkdir -p ./geolite2
+          mkdir -p ./geolite2 ./output
 
-      - name: Download GeoLite2 CSV
+      - name: Download GeoLite2 CSV from MaxMind
+        env:
+          LICENSE_KEY: ${{ secrets.MAXMIND_GEOLITE2_LICENSE }}
         run: |
-          wget -O ./GeoLite2-Country-CSV.zip "https://raw.githubusercontent.com/Loyalsoldier/geoip/release/GeoLite2-Country-CSV.zip"
+          echo "Downloading GeoLite2-Country CSV..."
+          wget -O ./GeoLite2-Country-CSV.zip "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country-CSV&license_key=${LICENSE_KEY}&suffix=zip"
           unzip ./GeoLite2-Country-CSV.zip -d ./geolite2_temp
           EXTRACTED_DIR=$(find ./geolite2_temp -maxdepth 1 -type d -name "GeoLite2-Country-CSV_*" | head -n1)
           mv "$EXTRACTED_DIR"/* ./geolite2/
@@ -33,18 +38,17 @@ jobs:
       - name: Convert CSV → MMDB
         run: |
           go run . convert -c config.json
-          # 将输出从 ./output 移动到根目录
-          mv ./output/Cn.mmdb ./Cn.mmdb
-          mv ./output/Ru.mmdb ./Ru.mmdb
-          mv ./output/Cn-Ru.mmdb ./Cn-Ru.mmdb
+          mv -f ./output/Cn.mmdb ./Cn.mmdb
+          mv -f ./output/Ru.mmdb ./Ru.mmdb
+          mv -f ./output/Cn-Ru.mmdb ./Cn-Ru.mmdb
 
       - name: Commit and push MMDB files
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f Cn.mmdb Ru.mmdb Cn-Ru.mmdb
-          git commit -m "Update GeoIP MMDB"
+          git diff --cached --quiet || git commit -m "Update GeoIP MMDB"
           git push
 
-      - name: List output files
-        run: ls -l
+      - name: List MMDB files
+        run: ls -lh ./Cn.mmdb ./Ru.mmdb ./Cn-Ru.mmdb
