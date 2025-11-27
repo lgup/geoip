@@ -5,7 +5,8 @@
       "action": "add",
       "args": {
         "country": "./geolite2/GeoLite2-Country-Locations-en.csv",
-        "ipv4": "./geolite2/GeoLite2-Country-Blocks-IPv4.csv"
+        "ipv4": "./geolite2/GeoLite2-Country-Blocks-IPv4.csv",
+        "ipv6": "./geolite2/GeoLite2-Country-Blocks-IPv6.csv"
       }
     },
 
@@ -36,6 +37,16 @@
         "uri": "https://raw.githubusercontent.com/gaoyifan/china-operator-ip/ip-lists/china.txt",
         "onlyIPType": "ipv4"
       }
+    },
+
+    {
+      "type": "text",
+      "action": "add",
+      "args": {
+        "name": "cn",
+        "uri": "https://raw.githubusercontent.com/gaoyifan/china-operator-ip/ip-lists/china6.txt",
+        "onlyIPType": "ipv6"
+      }
     }
   ],
 
@@ -64,7 +75,39 @@
       "args": {
         "outputDir": "./output",
         "outputName": "Cn-Ru.mmdb",
-        "wantedList": ["cn", "ru"]
+        "wantedList": ["cn","ru"]
+      }
+    },
+
+    /* IPv4 only 版本 */
+    {
+      "type": "maxmindMMDB",
+      "action": "output",
+      "args": {
+        "outputDir": "./output",
+        "outputName": "Cn-NoIPV6.mmdb",
+        "wantedList": ["cn"],
+        "onlyIPType": "ipv4"
+      }
+    },
+    {
+      "type": "maxmindMMDB",
+      "action": "output",
+      "args": {
+        "outputDir": "./output",
+        "outputName": "Ru-NoIPV6.mmdb",
+        "wantedList": ["ru"],
+        "onlyIPType": "ipv4"
+      }
+    },
+    {
+      "type": "maxmindMMDB",
+      "action": "output",
+      "args": {
+        "outputDir": "./output",
+        "outputName": "Cn-Ru-NoIPV6.mmdb",
+        "wantedList": ["cn","ru"],
+        "onlyIPType": "ipv4"
       }
     }
   ]
