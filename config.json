@@ -10,7 +10,6 @@
       }
     },
 
-    /* 删除 MaxMind 的中国 IPv4，避免重复并加强精度 */
     {
       "type": "cutter",
       "action": "remove",
@@ -20,7 +19,6 @@
       }
     },
 
-    /* 加入 17mon 中国 IPv4 */
     {
       "type": "text",
       "action": "add",
@@ -31,7 +29,6 @@
       }
     },
 
-    /* 加入 gaoyifan 中国 IPv4 */
     {
       "type": "text",
       "action": "add",
@@ -42,7 +39,6 @@
       }
     },
 
-    /* 加入 gaoyifan 中国 IPv6 */
     {
       "type": "text",
       "action": "add",
