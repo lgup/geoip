@@ -1,53 +1,49 @@
-name: Update GeoLite2 CSV & Convert
+name: Build GeoIP MMDB
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * 4"
+    - cron: "0 0 * * 4"  # 每周四执行一次
 
 jobs:
-  update-geoip:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v6
 
-      - name: Setup Go
+      - name: Set up Go
         uses: actions/setup-go@v6
         with:
           go-version-file: ./go.mod
 
-      - name: Update GeoLite2 CSV & Convert to MMDB
-        env:
-          WORKDIR: ${{ github.workspace }}
+      - name: Prepare directories
         run: |
-          set -e
-          GEOLITE2DIR="$WORKDIR/geolite2"
-          ZIP_URL="https://raw.githubusercontent.com/Loyalsoldier/geoip/release/GeoLite2-Country-CSV.zip"
-          ZIP_FILE="$WORKDIR/GeoLite2-Country-CSV.zip"
+          mkdir -p ./geolite2 ./output
 
-          echo "===== STEP 1: Download GeoLite2 CSV ====="
-          mkdir -p "$GEOLITE2DIR"
-          rm -rf "$GEOLITE2DIR"/*
-          rm -f "$ZIP_FILE"
+      - name: Download GeoLite2 CSV
+        env:
+          LICENSE_KEY: ${{ secrets.MAXMIND_GEOLITE2_LICENSE }}
+        run: |
+          wget -O ./GeoLite2-Country-CSV.zip "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key=${LICENSE_KEY}&suffix=zip"
+          unzip ./GeoLite2-Country-CSV.zip -d ./geolite2_temp
+          EXTRACTED_DIR=$(find ./geolite2_temp -maxdepth 1 -type d -name "GeoLite2-Country-CSV_*" | head -n1)
+          mv "$EXTRACTED_DIR"/* ./geolite2/
+          rm -rf ./geolite2_temp GeoLite2-Country-CSV.zip
 
-          wget -O "$ZIP_FILE" "$ZIP_URL"
-          unzip "$ZIP_FILE" -d "$WORKDIR"
-
-          EXTRACTED_DIR=$(find "$WORKDIR" -maxdepth 1 -type d -name "GeoLite2-Country-CSV_*" | head -n1)
-
-          mv "$EXTRACTED_DIR"/GeoLite2-Country-Blocks-IPv4.csv "$GEOLITE2DIR"/
-          mv "$EXTRACTED_DIR"/GeoLite2-Country-Blocks-IPv6.csv "$GEOLITE2DIR"/
-          mv "$EXTRACTED_DIR"/GeoLite2-Country-Locations-ru.csv "$GEOLITE2DIR"/
-          mv "$EXTRACTED_DIR"/GeoLite2-Country-Locations-en.csv "$GEOLITE2DIR"/
-          mv "$EXTRACTED_DIR"/GeoLite2-Country-Locations-zh-CN.csv "$GEOLITE2DIR"/GeoLite2-Country-Locations-cn.csv
-          rm -rf "$EXTRACTED_DIR"
-          rm -f "$ZIP_FILE"
-
-          echo "✅ CSV updated. Contents of $GEOLITE2DIR:"
-          ls -l "$GEOLITE2DIR"
-
-          echo "===== STEP 2: Convert CSV → MMDB ====="
-          cd "$WORKDIR"
+      - name: Convert CSV → MMDB
+        run: |
           go run . convert -c config.json
-          echo "✅ Conversion complete!"
+
+      - name: Upload MMDB files to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file_glob: true
+          file: ./output/*
+          release_name: ${{ github.run_id }}
+          tag: geoip-${{ github.run_id }}
+
+      - name: List output files
+        run: ls -l ./output
