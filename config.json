@@ -8,16 +8,6 @@
         "ipv4": "./geolite2/GeoLite2-Country-Blocks-IPv4.csv"
       }
     },
-
-    {
-      "type": "cutter",
-      "action": "remove",
-      "args": {
-        "wantedList": ["cn"],
-        "onlyIPType": "ipv4"
-      }
-    },
-
     {
       "type": "text",
       "action": "add",
@@ -27,7 +17,6 @@
         "onlyIPType": "ipv4"
       }
     },
-
     {
       "type": "text",
       "action": "add",
@@ -38,7 +27,6 @@
       }
     }
   ],
-
   "output": [
     {
       "type": "maxmindMMDB",
